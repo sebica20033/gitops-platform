@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: demo-app
-        image: nginx:latest
+        image: sebica20033/demo-app:6051fbdb64353e38d051db11550b2f9f12aad95b
         ports:
         - containerPort: 80
