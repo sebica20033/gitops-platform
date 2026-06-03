@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-backend
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: task-backend
+  template:
+    metadata:
+      labels:
+        app: task-backend
+    spec:
+      containers:
+      - name: task-backend
+        image: sebica20033/task-backend:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          value: postgresql://taskuser:taskpass@postgresql:5432/taskdb
+        - name: REDIS_HOST
+          value: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-backend
+  namespace: default
+spec:
+  selector:
+    app: task-backend
+  ports:
+  - port: 80
+    targetPort: 5000

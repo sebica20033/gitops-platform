@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .add-task { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .add-task input { width: 70%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        .add-task button { width: 28%; margin-left: 2%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        .add-task button:hover { background: #45a049; }
+        .task { background: white; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; }
+        .task.done { opacity: 0.6; }
+        .task.done span { text-decoration: line-through; }
+        .task-left { display: flex; align-items: center; gap: 15px; }
+        .task input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .task span { font-size: 16px; color: #333; }
+        .delete-btn { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .delete-btn:hover { background: #c0392b; }
+        .stats { text-align: center; color: #666; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Manager</h1>
+        <div class="add-task">
+            <input type="text" id="taskInput" placeholder="Adaugă un task nou..." onkeypress="handleKey(event)">
+            <button onclick="addTask()">Adaugă</button>
+        </div>
+        <div id="taskList"></div>
+        <div class="stats" id="stats"></div>
+    </div>
+
+    <script>
+        const API = '/api/tasks';
+
+        async function loadTasks() {
+            const res = await fetch(API);
+            const tasks = await res.json();
+            renderTasks(tasks);
+        }
+
+        function renderTasks(tasks) {
+            const list = document.getElementById('taskList');
+            const stats = document.getElementById('stats');
+            list.innerHTML = '';
+            tasks.forEach(task => {
+                const div = document.createElement('div');
+                div.className = `task ${task.done ? 'done' : ''}`;
+                div.innerHTML = `
+                    <div class="task-left">
+                        <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleTask(${task.id}, this.checked)">
+                        <span>${task.title}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Șterge</button>
+                `;
+                list.appendChild(div);
+            });
+            const done = tasks.filter(t => t.done).length;
+            stats.textContent = `${done} din ${tasks.length} task-uri completate`;
+        }
+
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            if (!input.value.trim()) return;
+            await fetch(API, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title: input.value.trim()})
+            });
+            input.value = '';
+            loadTasks();
+        }
+
+        async function toggleTask(id, done) {
+            await fetch(`${API}/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({done})
+            });
+            loadTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch(`${API}/${id}`, {method: 'DELETE'});
+            loadTasks();
+        }
+
+        function handleKey(event) {
+            if (event.key === 'Enter') addTask();
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
