@@ -23,6 +23,13 @@ spec:
           value: postgresql://taskuser:taskpass@postgresql:5432/taskdb
         - name: REDIS_HOST
           value: redis
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
 ---
 apiVersion: v1
 kind: Service
