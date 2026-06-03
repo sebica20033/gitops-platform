@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: task-manager-ingress
+  name: task-manager-api
   namespace: default
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
@@ -19,6 +19,18 @@ spec:
             name: task-backend
             port:
               number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: task-manager-frontend
+  namespace: default
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: taskmanager.local
+    http:
+      paths:
       - path: /
         pathType: Prefix
         backend:
